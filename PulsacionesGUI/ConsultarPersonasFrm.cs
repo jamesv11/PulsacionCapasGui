@@ -33,14 +33,14 @@ namespace PulsacionesGUI
             else if (OpcionCmb.Text == "Hombres")
             {
                 TablaTgb.DataSource = null;
-                respuestaConsulta.Personas = personaService.CantidadHombres();
-                TablaTgb.DataSource = respuestaConsulta.Personas;
+                respuestaConsulta = personaService.Consultar();
+                TablaTgb.DataSource = personaService.CantidadHombres();
             }
             else
             {
                 TablaTgb.DataSource = null;
-                respuestaConsulta.Personas = personaService.CantidadMujeres();
-                TablaTgb.DataSource = respuestaConsulta.Personas;
+                respuestaConsulta = personaService.Consultar();
+                TablaTgb.DataSource = personaService.CantidadMujeres();
             }
             
             
