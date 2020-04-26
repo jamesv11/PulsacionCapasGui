@@ -23,10 +23,32 @@ namespace PulsacionesGUI
 
         private void ConsultarBtm_Click(object sender, EventArgs e)
         {
-            TablaTgb.DataSource = null;
-            respuestaConsulta =  personaService.Consultar();
-            TablaTgb.DataSource = respuestaConsulta.Personas;
             
+            if (OpcionCmb.Text == "General")
+            {
+                TablaTgb.DataSource = null;
+                respuestaConsulta = personaService.Consultar();
+                TablaTgb.DataSource = respuestaConsulta.Personas;
+            }
+            else if (OpcionCmb.Text == "Hombres")
+            {
+                TablaTgb.DataSource = null;
+                respuestaConsulta.Personas = personaService.CantidadHombres();
+                TablaTgb.DataSource = respuestaConsulta.Personas;
+            }
+            else
+            {
+                TablaTgb.DataSource = null;
+                respuestaConsulta.Personas = personaService.CantidadMujeres();
+                TablaTgb.DataSource = respuestaConsulta.Personas;
+            }
+            
+            
+
+        }
+
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
 
         }
     }
