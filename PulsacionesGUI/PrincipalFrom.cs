@@ -28,5 +28,11 @@ namespace PulsacionesGUI
             ConsultaPersonaFrm consultaPersonaFrm = new ConsultaPersonaFrm();
             consultaPersonaFrm.Show();
         }
+
+        private void consultarTotalesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ConsultarPersonasFrm consultarPersonasFrm = new ConsultarPersonasFrm();
+            consultarPersonasFrm.Show();
+        }
     }
 }

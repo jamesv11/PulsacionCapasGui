@@ -22,7 +22,7 @@ namespace BLL
             {
                 if (personaRepository.Buscar(persona.Identificacion) == null)
                 {
-                    
+
                     personaRepository.Guardar(persona);
                     return "Los Datos han sido guardados satisfactoriamente";
                 }
@@ -115,8 +115,8 @@ namespace BLL
             try
             {
                 respuesta.Error = false;
-                respuesta.Personas=personaRepository.Consultar();
-                if (respuesta.Personas!=null)
+                respuesta.Personas = personaRepository.Consultar();
+                if (respuesta.Personas != null)
                 {
                     respuesta.Mensaje = "Se Consulta la Informacion de personas";
                 }
@@ -124,36 +124,64 @@ namespace BLL
                 {
                     respuesta.Mensaje = "No existen Datos para Consultar";
                 }
-                
+
             }
             catch (Exception e)
             {
                 respuesta.Error = true;
-                respuesta.Mensaje = $"Erro en datos: "+e.Message;
+                respuesta.Mensaje = $"Erro en datos: " + e.Message;
             }
             return respuesta;
 
         }
+        public int ObtenerTotal()
+        {
+            return personaRepository.ObtenerCantidadPersonas();
+        }
+
+        public int ObtenerCantidadMujeres()
+        {
+            return personaRepository.ObtenerCantidadMujeres();
+        }
+        public int ObtenerCantidadHombres()
+        {
+            return personaRepository.ObtenerCantidadHombre();
+        }
+        public IList<Persona> CantidadMujeres()
+        {
+            return personaRepository.ConsultarMujeres();
+        }
+        public IList<Persona> CantidadHombres()
+        {
+            return personaRepository.ConsultarHombres();
+        }
+
+
+
+        }
+
+
+        public class RespuestaBusqueda
+        {
+            public string Mensaje { get; set; }
+            public Persona Persona { get; set; }
+            public bool Error { get; set; }
+        }
+
+
+
+        public class RespuestaConsulta
+        {
+            public string Mensaje { get; set; }
+            public IList<Persona> Personas { get; set; }
+            public bool Error { get; set; }
+        }
+
+
+
 
     }
 
 
-    public class RespuestaBusqueda
-    {
-        public string Mensaje { get; set; }
-        public Persona Persona { get; set; }
-        public bool Error { get; set; }
-    }
 
 
-
-    public class RespuestaConsulta
-    {
-        public string Mensaje { get; set; }
-        public List<Persona> Personas { get; set; }
-        public bool Error { get; set; }
-    }
-
-
-
-}

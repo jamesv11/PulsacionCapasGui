@@ -10,7 +10,7 @@ namespace DAL
     public class PersonaRepository
     {
         private string ruta = @"Persona.txt";
-        private List<Persona> personas;
+        private IList<Persona> personas;
         public PersonaRepository()
         {
             personas = new List<Persona>();
@@ -26,9 +26,10 @@ namespace DAL
             
         }
 
-        public List<Persona> Consultar()
+        public IList<Persona> Consultar()
         {
             personas.Clear();
+            
             
             FileStream fileStream = new FileStream(ruta, FileMode.OpenOrCreate);
             StreamReader lector = new StreamReader(fileStream);
@@ -99,6 +100,30 @@ namespace DAL
                 }
             }
             return null;
+        }
+        public int ObtenerCantidadPersonas()
+        {
+
+            return personas.Count();
+            
+        }
+
+        public int ObtenerCantidadMujeres()
+        {
+            return  personas.Where(persona => persona.Sexo.Equals("F")).Count();
+        }
+
+        public int ObtenerCantidadHombre()
+        {
+            return personas.Where(persona => persona.Sexo.Equals("M")).Count();
+        }
+        public IList<Persona> ConsultarMujeres()
+        {
+            return personas.Where(personas => personas.Sexo.Equals("F")).ToList();
+        }
+        public IList<Persona> ConsultarHombres()
+        {
+            return personas.Where(personas => personas.Sexo.Equals("M")).ToList();
         }
     }
 }

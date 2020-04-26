@@ -32,6 +32,7 @@
             this.pulsacionesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.registrarToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.consultarToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.consultarTotalesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -49,7 +50,8 @@
             // 
             this.pulsacionesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.registrarToolStripMenuItem,
-            this.consultarToolStripMenuItem});
+            this.consultarToolStripMenuItem,
+            this.consultarTotalesToolStripMenuItem});
             this.pulsacionesToolStripMenuItem.Name = "pulsacionesToolStripMenuItem";
             this.pulsacionesToolStripMenuItem.Size = new System.Drawing.Size(84, 20);
             this.pulsacionesToolStripMenuItem.Text = "Pulsaciones ";
@@ -67,6 +69,13 @@
             this.consultarToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.consultarToolStripMenuItem.Text = "Consultar";
             this.consultarToolStripMenuItem.Click += new System.EventHandler(this.consultarToolStripMenuItem_Click);
+            // 
+            // consultarTotalesToolStripMenuItem
+            // 
+            this.consultarTotalesToolStripMenuItem.Name = "consultarTotalesToolStripMenuItem";
+            this.consultarTotalesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.consultarTotalesToolStripMenuItem.Text = "ConsultarTotales";
+            this.consultarTotalesToolStripMenuItem.Click += new System.EventHandler(this.consultarTotalesToolStripMenuItem_Click);
             // 
             // Principal
             // 
@@ -91,6 +100,7 @@
         private System.Windows.Forms.ToolStripMenuItem pulsacionesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem registrarToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem consultarToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem consultarTotalesToolStripMenuItem;
     }
 }
 
