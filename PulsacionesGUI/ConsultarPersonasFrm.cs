@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
 using System.Data;
 using System.Drawing;
 using System.Linq;
@@ -14,37 +15,48 @@ namespace PulsacionesGUI
 {
     public partial class ConsultarPersonasFrm : Form
     {
-        PersonaService personaService = new PersonaService();
-        RespuestaConsulta respuestaConsulta = new RespuestaConsulta();
+        PersonaService personaService;
         public ConsultarPersonasFrm()
         {
             InitializeComponent();
+            var connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
+            personaService = new PersonaService(connectionString);
         }
 
         private void ConsultarBtm_Click(object sender, EventArgs e)
         {
-            
-            if (OpcionCmb.Text == "General")
+
+            RespuestaConsulta respuesta = new RespuestaConsulta();
+
+            string tipo = OpcionCmb.Text;
+            if(tipo == "General")
             {
                 TablaTgb.DataSource = null;
-                respuestaConsulta = personaService.Consultar();
-                TablaTgb.DataSource = respuestaConsulta.Personas;
+                respuesta = personaService.Consultar();
+                TablaTgb.DataSource = respuesta.Personas;
+               
+                
             }
-            else if (OpcionCmb.Text == "Hombres")
+            else if (tipo == "Hombres")
             {
                 TablaTgb.DataSource = null;
-                respuestaConsulta = personaService.Consultar();
-                TablaTgb.DataSource = personaService.CantidadHombres();
+                
+                respuesta.Personas = personaService.ObtenerPersonas("M");
+                TablaTgb.DataSource = respuesta.Personas;
+
+
             }
             else
             {
                 TablaTgb.DataSource = null;
-                respuestaConsulta = personaService.Consultar();
-                TablaTgb.DataSource = personaService.CantidadMujeres();
-            }
-            
-            
+               
+                respuesta.Personas = personaService.ObtenerPersonas("F");
+                TablaTgb.DataSource = respuesta.Personas;
 
+
+            }
+
+            MessageBox.Show(respuesta.Mensaje, "Busqueda", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)

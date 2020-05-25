@@ -26,7 +26,7 @@ namespace Entity
                 Pulsacion = (210 - Edad) / 10;
             }   
             else
-            {   
+            {       
                 Pulsacion = 0;
             }
 

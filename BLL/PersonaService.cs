@@ -1,38 +1,43 @@
-﻿            using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Entity;
 using DAL;
+
+
+
 namespace BLL
 {
     public class PersonaService
     {
         private PersonaRepository personaRepository;
-        public PersonaService()
+        private readonly ConnectionManager conexion;
+
+        public PersonaService(string connectionString)
         {
-            personaRepository = new PersonaRepository();
+            conexion = new ConnectionManager(connectionString);
+            personaRepository = new PersonaRepository(conexion);
 
         }
         public string Guardar(Persona persona)
         {
 
-            try
             {
-                if (personaRepository.Buscar(persona.Identificacion) == null)
+                try
                 {
-
+                    persona.CalcularPulsacion();
+                    conexion.Open();
                     personaRepository.Guardar(persona);
-                    return "Los Datos han sido guardados satisfactoriamente";
+                    conexion.Close();
+                    return $"Se guardaron los datos satisfactoriamente";
                 }
-                return $"La identificacion {persona.Identificacion} ya se encuentra registrada por favor verifique los datos";
-
-            }
-            catch (Exception e)
-            {
-
-                return "Error de Datos: " + e.Message;
+                catch (Exception e)
+                {
+                    return $"Error de la Aplicacion: {e.Message}";
+                }
+                finally { conexion.Close(); }
             }
         }
 
@@ -41,42 +46,52 @@ namespace BLL
         {
             try
             {
-                if (personaRepository.Buscar(identificacion) != null)
+                conexion.Open();
+                var persona = personaRepository.BuscarPorIdentificacion(identificacion);
+                if (persona != null)
                 {
-
-                    personaRepository.Eliminar(identificacion);
-                    return $"Los Persona con identificacion {identificacion} ha sido eliminada satisfacatoriamente";
+                    personaRepository.Eliminar(persona);
+                    conexion.Close();
+                    return ($"El registro {persona.Nombre} se ha eliminado satisfactoriamente.");
                 }
-                return $"La identificacion {identificacion} no se encuentra registrada por favor verifique los datos";
+                else
+                {
+                    return ($"Lo sentimos, {identificacion} no se encuentra registrada.");
+                }
             }
             catch (Exception e)
             {
 
-                return "Error de datos" + e.Message;
+                return $"Error de la Aplicación: {e.Message}";
             }
+            finally { conexion.Close(); }
 
 
         }
 
         public string Modificar(Persona persona)
         {
-
             try
             {
-                if (personaRepository.Buscar(persona.Identificacion) != null)
+                conexion.Open();
+                var personaVieja = personaRepository.BuscarPorIdentificacion(persona.Identificacion);
+                if (personaVieja != null)
                 {
-
                     personaRepository.Modificar(persona);
-                    return $"Los Persona con identificacion {persona.Identificacion} ha sido modificada satisfacatoriamente";
+                    conexion.Close();
+                    return ($"El registro {persona.Nombre} se ha modificado satisfactoriamente.");
                 }
-                return $"La identificacion {persona.Identificacion} no se encuentra registrada por favor verifique los datos";
-
+                else
+                {
+                    return ($"Lo sentimos, {persona.Identificacion} no se encuentra registrada.");
+                }
             }
             catch (Exception e)
             {
 
-                return "Error de datos" + e.Message;
+                return $"Error de la Aplicación: {e.Message}";
             }
+            finally { conexion.Close(); }
         }
 
         public RespuestaBusqueda Buscar(string identificacion)
@@ -85,27 +100,22 @@ namespace BLL
 
             try
             {
+                conexion.Open();
+                respueta.Persona = personaRepository.BuscarPorIdentificacion(identificacion);
+                conexion.Close();
+                respueta.Mensaje = (respueta.Persona != null) ? "Se encontro la persona buscada" : "La persona no existe";
                 respueta.Error = false;
-
-                respueta.Persona = personaRepository.Buscar(identificacion);
-                if (respueta.Persona != null)
-                {
-                    respueta.Mensaje = "Se consultaron los datos Satisfactoriamente";
-                }
-                else
-                {
-                    respueta.Mensaje = "La Persona solicitada no existe";
-                }
                 return respueta;
+
             }
-            catch (Exception e)
+            catch (Exception e )
             {
-                respueta.Error = true;
-                respueta.Mensaje = "Error de Datos:" + e.Message;
-                respueta.Persona = null;
-                return respueta;
 
+                respueta.Mensaje = $"Error de la Aplicacion: {e.Message}";
+                respueta.Error = true;
+                return respueta;
             }
+            finally { conexion.Close(); }
         }
 
 
@@ -114,24 +124,29 @@ namespace BLL
             RespuestaConsulta respuesta = new RespuestaConsulta();
             try
             {
-                respuesta.Error = false;
+
+                conexion.Open();
                 respuesta.Personas = personaRepository.Consultar();
-                if (respuesta.Personas != null)
+                conexion.Close();
+                if (respuesta.Personas.Count > 0)
                 {
-                    respuesta.Mensaje = "Se Consulta la Informacion de personas";
+                    respuesta.Mensaje = "Se consultan los Datos";
                 }
                 else
                 {
-                    respuesta.Mensaje = "No existen Datos para Consultar";
+                    respuesta.Mensaje = "No hay datos para consultar";
                 }
-
+                respuesta.Error = false;
+                return respuesta;
             }
             catch (Exception e)
             {
+                respuesta.Mensaje = $"Error de la Aplicacion: {e.Message}";
                 respuesta.Error = true;
-                respuesta.Mensaje = $"Erro en datos: " + e.Message;
+                return respuesta;
             }
-            return respuesta;
+            finally { conexion.Close(); }
+
 
         }
         public int ObtenerTotal()
@@ -139,22 +154,38 @@ namespace BLL
             return personaRepository.ObtenerCantidadPersonas();
         }
 
-        public int ObtenerCantidadMujeres()
+        public int ObtenerCantidadPersonas(string tipo)
         {
-            return personaRepository.ObtenerCantidadMujeres();
+            try
+            {
+                return personaRepository.ObtenerCantidadPersonas(tipo);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            finally { conexion.Close(); }
+            
         }
-        public int ObtenerCantidadHombres()
+        
+        public IList<Persona> ObtenerPersonas(string tipo)
         {
-            return personaRepository.ObtenerCantidadHombre();
+            try
+            {
+                conexion.Open();
+                return personaRepository.ConsultarPersonas(tipo);
+            }
+            catch (Exception )
+            {
+
+                throw;
+            }
+            finally { conexion.Close(); }
+            
+            
         }
-        public IList<Persona> CantidadMujeres()
-        {
-            return personaRepository.ConsultarMujeres();
-        }
-        public IList<Persona> CantidadHombres()
-        {
-            return personaRepository.ConsultarHombres();
-        }
+       
 
 
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
 using System.Data;
 using System.Drawing;
 using System.Linq;
@@ -14,10 +15,12 @@ namespace PulsacionesGUI
 {
     public partial class RegistroPersonaFrm : Form
     {
-        PersonaService personaService = new PersonaService();
+        PersonaService personaService;
 
         public RegistroPersonaFrm()
         {
+            var connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
+            personaService = new PersonaService(connectionString);
             InitializeComponent();
         }
 
@@ -31,7 +34,7 @@ namespace PulsacionesGUI
             persona.CalcularPulsacion();
             PulsacionTxt.Text = persona.Pulsacion.ToString();
             string mensaje = personaService.Guardar(persona);
-            MessageBox.Show(mensaje);
+            MessageBox.Show(mensaje, "Mensaje de Guardado", MessageBoxButtons.OKCancel, MessageBoxIcon.Information);
             LimpiarCampos();
 
         }

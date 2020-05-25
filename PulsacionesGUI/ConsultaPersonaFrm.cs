@@ -9,37 +9,49 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Entity;
 using BLL;
+using System.Configuration;
 
 namespace PulsacionesGUI
 {
     public partial class ConsultaPersonaFrm : Form
     {
+        PersonaService personaService;
+        Persona persona;
+        RespuestaBusqueda respuestaBusqueda;
         public ConsultaPersonaFrm()
         {
+            var connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
+            personaService = new PersonaService(connectionString);
+            respuestaBusqueda = new RespuestaBusqueda();
             InitializeComponent();
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            VaciarCuadrosTexto();
 
-            PersonaService personaService = new PersonaService();
             RespuestaBusqueda respuestaBusqueda = new RespuestaBusqueda();
-
-            respuestaBusqueda = personaService.Buscar(IdentificacionTxt.Text);
-            if (respuestaBusqueda.Persona != null)
+            string identificacion = IdentificacionTxt.Text;
+            if (identificacion != "")
             {
-                NombreTxt.Text = respuestaBusqueda.Persona.Nombre;
-                EdadTxt.Text = respuestaBusqueda.Persona.Edad.ToString();
-                SexoTxt.Text = respuestaBusqueda.Persona.Sexo;
-                PulsacionTxt.Text = respuestaBusqueda.Persona.Pulsacion.ToString();
+                respuestaBusqueda = personaService.Buscar(IdentificacionTxt.Text);
+                if (respuestaBusqueda.Persona != null)
+                {
+                    NombreTxt.Text = respuestaBusqueda.Persona.Nombre;
+                    EdadTxt.Text = respuestaBusqueda.Persona.Edad.ToString();
+                    SexoTxt.Text = respuestaBusqueda.Persona.Sexo;
+                    PulsacionTxt.Text = respuestaBusqueda.Persona.Pulsacion.ToString();
+                    MessageBox.Show(respuestaBusqueda.Mensaje, "Busqueda", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show(respuestaBusqueda.Mensaje, "Busqueda", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+
             }
-
-
-            string mensaje = respuestaBusqueda.Mensaje;
-
-            MessageBox.Show(mensaje);
-
+            else
+            {
+                MessageBox.Show(respuestaBusqueda.Mensaje, "Busqueda", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
 
         }
 
@@ -47,15 +59,28 @@ namespace PulsacionesGUI
 
         private void button2_Click(object sender, EventArgs e)
         {
-            PersonaService personaService = new PersonaService();
-            RespuestaBusqueda respuestaBusqueda = new RespuestaBusqueda();
-            respuestaBusqueda = personaService.Buscar(IdentificacionTxt.Text);
-            if(respuestaBusqueda.Persona != null)
+
+            string identificacion = IdentificacionTxt.Text;
+            if(identificacion != "")
             {
-                string mensaje = personaService.Eliminar(IdentificacionTxt.Text);
-                MessageBox.Show(mensaje);
-                VaciarCuadrosTexto();
+                var respuesta = MessageBox.Show("Está seguro de eliminar la información", "Mensaje de Eliminación", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (respuesta == DialogResult.Yes)
+                {
+                   
+                    
+                        string mensaje = personaService.Eliminar(IdentificacionTxt.Text);
+                        MessageBox.Show(mensaje);
+                        VaciarCuadrosTexto();
+                    
+                }
+                else
+                {
+                    MessageBox.Show("Por favor digite la cedula de la persona a modificar y presione el boton buscar", "Busqueda", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+               
+               
             }
+            
             
 
             

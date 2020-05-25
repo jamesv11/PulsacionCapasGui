@@ -9,14 +9,19 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Entity;
 using BLL;
+using System.Configuration;
 
 namespace PulsacionesGUI
 {
     public partial class ModificarPersonaFrm : Form
     {
+        PersonaService personaService;
+        Persona persona;
         public ModificarPersonaFrm()
         {
             InitializeComponent();
+            var connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
+            personaService = new PersonaService(connectionString);
         }
 
         private void label1_Click(object sender, EventArgs e)
@@ -37,22 +42,31 @@ namespace PulsacionesGUI
         private void button3_Click(object sender, EventArgs e)
         {
 
-            PersonaService personaService = new PersonaService();
+           
             RespuestaBusqueda respuestaBusqueda = new RespuestaBusqueda();
-
-            respuestaBusqueda = personaService.Buscar(IdentificacionTxt.Text);
-            if (respuestaBusqueda.Persona != null)
+            string identificacion = IdentificacionTxt.Text;
+            if (identificacion != "")
             {
-                NombreTxt.Text = respuestaBusqueda.Persona.Nombre;
-                EdadTxt.Text = respuestaBusqueda.Persona.Edad.ToString();
-                SexoCmb.Text = respuestaBusqueda.Persona.Sexo;
-                PulsacionTxt.Text = respuestaBusqueda.Persona.Pulsacion.ToString();
+                respuestaBusqueda = personaService.Buscar(IdentificacionTxt.Text);
+                if (respuestaBusqueda.Persona != null)
+                {
+                    NombreTxt.Text = respuestaBusqueda.Persona.Nombre;
+                    EdadTxt.Text = respuestaBusqueda.Persona.Edad.ToString();
+                    SexoCmb.Text = respuestaBusqueda.Persona.Sexo;
+                    PulsacionTxt.Text = respuestaBusqueda.Persona.Pulsacion.ToString();
+                    MessageBox.Show(respuestaBusqueda.Mensaje, "Busqueda", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show(respuestaBusqueda.Mensaje, "Busqueda", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+              
             }
-
-
-            string mensaje = respuestaBusqueda.Mensaje;
-
-            MessageBox.Show(mensaje);
+            else
+            {
+                MessageBox.Show(respuestaBusqueda.Mensaje, "Busqueda", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+          
 
 
         }
@@ -64,24 +78,25 @@ namespace PulsacionesGUI
 
         private void button2_Click(object sender, EventArgs e)
         {
-            PersonaService personaService = new PersonaService();
-            RespuestaBusqueda respuestaBusqueda = new RespuestaBusqueda();
-           
-
-           
-
-            respuestaBusqueda = personaService.Buscar(IdentificacionTxt.Text);
-            if (respuestaBusqueda.Persona != null)
+            var respuesta = MessageBox.Show("Está seguro de Modificar la información", "Mensaje de Eliminación", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            if(respuesta == DialogResult.Yes)
             {
-                Persona persona = new Persona();
-                persona.Identificacion = IdentificacionTxt.Text;
-                persona.Nombre = NombreTxt.Text;
-                persona.Edad = int.Parse(EdadTxt.Text);
-                persona.Sexo = SexoCmb.Text;
-                persona.CalcularPulsacion();
-                PulsacionTxt.Text = persona.Pulsacion.ToString();
-                string mensaje = personaService.Modificar(persona);
-                MessageBox.Show(mensaje);
+                RespuestaBusqueda respuestaBusqueda = new RespuestaBusqueda();
+
+                respuestaBusqueda = personaService.Buscar(IdentificacionTxt.Text);
+                if (respuestaBusqueda.Persona != null)
+                {
+                    Persona persona = new Persona();
+                    persona.Identificacion = IdentificacionTxt.Text;
+                    persona.Nombre = NombreTxt.Text;
+                    persona.Edad = int.Parse(EdadTxt.Text);
+                    persona.Sexo = SexoCmb.Text;
+                    persona.CalcularPulsacion();
+                    PulsacionTxt.Text = persona.Pulsacion.ToString();
+                    string mensaje = personaService.Modificar(persona);
+                    MessageBox.Show(mensaje);
+                }
+          
                 
             }
         }

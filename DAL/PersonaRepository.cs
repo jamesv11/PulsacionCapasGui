@@ -5,101 +5,105 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using Entity;
+using System.Data.SqlClient;
+
 namespace DAL
 {
     public class PersonaRepository
     {
-        private string ruta = @"Persona.txt";
-        private IList<Persona> personas;
-        public PersonaRepository()
+        //private string ruta = @"Persona.txt";
+        private readonly SqlConnection _connection;
+        private IList<Persona> personas = new List<Persona>();
+        public PersonaRepository(ConnectionManager connection)
         {
-            personas = new List<Persona>();
+            _connection = connection._conexion;
         }
         public void Guardar(Persona persona)
         
         {
-            FileStream fileStream = new FileStream(ruta,FileMode.Append);
-            StreamWriter stream = new StreamWriter (fileStream);
-            stream.WriteLine(persona.ToString());
-            stream.Close();
-            fileStream.Close();
-            
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = @"INSERT INTO Persona(Identificacion,Nombre,Sexo,Edad,Pulsacion)
+                                        Values (@Identificacion,@Nombre,@Sexo,@Edad,@Pulsacion)";
+                command.Parameters.AddWithValue("@Identificacion", persona.Identificacion);
+                command.Parameters.AddWithValue("@Nombre", persona.Nombre);
+                command.Parameters.AddWithValue("@Sexo", persona.Sexo);
+                command.Parameters.AddWithValue("@Edad", persona.Edad);
+                command.Parameters.AddWithValue("@Pulsacion", persona.Pulsacion);
+                var filas = command.ExecuteNonQuery();
+
+            }
+
         }
 
         public IList<Persona> Consultar()
         {
-            personas.Clear();
-            
-            
-            FileStream fileStream = new FileStream(ruta, FileMode.OpenOrCreate);
-            StreamReader lector = new StreamReader(fileStream);
-            string linea = string.Empty;
-            while((linea=lector.ReadLine())!=null)
+            SqlDataReader dataReader;
+            List<Persona> personas = new List<Persona>();
+            using (var command = _connection.CreateCommand())
             {
-                Persona persona = new Persona();
-                string[] datos = linea.Split(';');
-                persona.Identificacion = datos[0];
-                persona.Nombre = datos[1];
-                persona.Edad = int.Parse(datos[2]);
-                persona.Sexo = datos[3];
-                persona.Pulsacion = Convert.ToDecimal(datos[4]);
-                personas.Add(persona);
-            }
-            fileStream.Close();
-            lector.Close();
-            return personas;
-        }
-
-
-        public void Eliminar(string identificacion)
-        {
-            personas.Clear();
-            personas = Consultar();
-            FileStream fileStream = new FileStream(ruta, FileMode.Create);
-            fileStream.Close();
-            foreach (var item in personas)
-            {
-                if (item.Identificacion!=identificacion)
+                command.CommandText = "Select * from persona ";
+                dataReader = command.ExecuteReader();
+                if (dataReader.HasRows)
                 {
-                    Guardar(item);
+                    while (dataReader.Read())
+                    {
+                        Persona persona = DataReaderMapToPerson(dataReader);
+                        personas.Add(persona);
+                    }
                 }
             }
-
+            return personas;
         }
+        private Persona DataReaderMapToPerson(SqlDataReader dataReader)
+        {
+            if (!dataReader.HasRows) return null;
+            Persona persona = new Persona();
+            persona.Identificacion = (string)dataReader["Identificacion"];
+            persona.Nombre = (string)dataReader["Nombre"];
+            persona.Sexo = (string)dataReader["Sexo"];
+            persona.Edad = (int)dataReader["Edad"];
+            persona.Pulsacion = (decimal)dataReader["Pulsacion"];
+            return persona;
+        }
+
+
+        public void Eliminar(Persona persona)
+        {
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = "Delete from persona where Identificacion=@Identificacion";
+                command.Parameters.AddWithValue("@Identificacion", persona.Identificacion);
+                command.ExecuteNonQuery();
+            }
+        }
+
 
         public void Modificar(Persona persona)
         {
-            personas.Clear();
-            personas = Consultar();
-            FileStream fileStream = new FileStream(ruta, FileMode.Create);
-            fileStream.Close();
-            foreach (var item in personas)
+            using (var command = _connection.CreateCommand())
             {
-                if (item.Identificacion != persona.Identificacion)
-                {
-                    Guardar(item);
-                }
-                else
-                {
-                    Guardar(persona);
-                }
-            }   
-
+                command.CommandText = "update persona set nombre=@Nombre, edad=@Edad, sexo=@Sexo, pulsacion=@Pulsacion where Identificacion=@Identificacion";
+                command.Parameters.AddWithValue("@Identificacion", persona.Identificacion);
+                command.Parameters.AddWithValue("@Nombre", persona.Nombre);
+                command.Parameters.AddWithValue("@Sexo", persona.Sexo);
+                command.Parameters.AddWithValue("@Edad", persona.Edad);
+                command.Parameters.AddWithValue("@Pulsacion", persona.Pulsacion);
+                command.ExecuteNonQuery();
+            }
         }
 
-        public Persona Buscar(string identificacion) 
+        public Persona BuscarPorIdentificacion(string identificacion)
         {
-            personas.Clear();
-            personas = Consultar();
-            Persona persona = new Persona();
-            foreach (var item in personas)
+            SqlDataReader dataReader;
+            using (var command = _connection.CreateCommand())
             {
-                if (item.Identificacion.Equals(identificacion))
-                {
-                    return item;
-                }
+                command.CommandText = "select * from persona where Identificacion=@Identificacion";
+                command.Parameters.AddWithValue("@Identificacion", identificacion);
+                dataReader = command.ExecuteReader();
+                dataReader.Read();
+                return DataReaderMapToPerson(dataReader);
             }
-            return null;
         }
         public int ObtenerCantidadPersonas()
         {
@@ -108,22 +112,16 @@ namespace DAL
             
         }
 
-        public int ObtenerCantidadMujeres()
+        public int ObtenerCantidadPersonas(string tipo)
         {
-            return  personas.Where(persona => persona.Sexo.Equals("F")).Count();
+            return  personas.Where(persona => persona.Sexo.Equals(tipo)).Count();
         }
 
-        public int ObtenerCantidadHombre()
+      
+        public IList<Persona> ConsultarPersonas(string tipo)
         {
-            return personas.Where(persona => persona.Sexo.Equals("M")).Count();
+            return Consultar().Where(personas => personas.Sexo.Equals(tipo)).ToList();
         }
-        public IList<Persona> ConsultarMujeres()
-        {
-            return personas.Where(personas => personas.Sexo.Equals("F")).ToList();
-        }
-        public IList<Persona> ConsultarHombres()
-        {
-            return personas.Where(personas => personas.Sexo.Equals("M")).ToList();
-        }
+        
     }
 }
