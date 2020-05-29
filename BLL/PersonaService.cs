@@ -75,8 +75,10 @@ namespace BLL
             {
                 conexion.Open();
                 var personaVieja = personaRepository.BuscarPorIdentificacion(persona.Identificacion);
+                conexion.Close();
                 if (personaVieja != null)
                 {
+                    conexion.Open();
                     personaRepository.Modificar(persona);
                     conexion.Close();
                     return ($"El registro {persona.Nombre} se ha modificado satisfactoriamente.");
